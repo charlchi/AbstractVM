@@ -16,7 +16,9 @@ class OperandFactory
 
 public:
 	IOperand const * createOperand( eOperandType type, std::string const & value ) const;
-
+    OperandFactory();
+    ~OperandFactory();
+ 
 };
 
 #endif // OPERAND_FACTORY_HPP

@@ -1,23 +1,20 @@
-
+ 
 #include <iostream>
+#include <sstream>
 #include <fstream>
+#include <list>
+#include <regex>
+#include "IOperand.hpp"
+#include "OperandFactory.hpp"
+#include "AbstractVM.hpp"
 
-void parse(std::istream& in) {
-    for (std::string line; getline(in, line); ) {
-        std::cout << line << "\n";
-    }
-}
-
-int main(int argc, char const *argv[])
+int main(int argc, char const* argv[])
 {
-    
-
-
-    if (argc == 2) {
-        std::ifstream file(argv[1]);
-        parse(file);
-    } else {
-        parse(std::cin);
+    try {
+        AbstractVM env = AbstractVM(argc, argv);
+    }
+    catch(const std::exception& e) {
+        std::cerr << "\033[1;31mError:\033[0m " << e.what() << '\n';
     }
     return 0;
 }
