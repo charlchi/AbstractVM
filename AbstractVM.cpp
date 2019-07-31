@@ -28,9 +28,8 @@ AbstractVM::~AbstractVM() {
 
 void AbstractVM::parse(std::istream& input) {
     for (std::string line; getline(input, line);) {
-        if (!isFile && line.find(";;") >= 0) {
+        if (!isFile && line.find(";;") != std::string::npos)
             return;
-        }
 
         // remove everything after ";" comment
         line = line.substr(0, line.find(";"));
@@ -100,7 +99,7 @@ void AbstractVM::avm_pop() {
     // unstacks a value, ERROR on empty
     if (stack.size() > 0) {
         stack.pop_back();
-    }
+    } else throw ParserException("Pop on empty stack"); 
 }
 
 void AbstractVM::avm_dump() {
@@ -119,8 +118,10 @@ void AbstractVM::avm_assert(std::stringstream& ss) {
         std::string ret;
         eOperandType type = avm_get_value(tok, ret);    
         const IOperand* test = factory.createOperand(type, ret);
-    }
-    throw ParserException("No VALUE after assert");
+        auto& op1 = *std::prev(stack.end(), 1);
+        if (test->toString() != op1->toString())
+           throw ParserException("Assert failed"); 
+    } else throw ParserException("No VALUE after assert");
     // ERROR if assert is not true
     // else no value after assert ERROR
 }
@@ -131,22 +132,21 @@ void AbstractVM::avm_do_op(char op) {
         auto& op1 = *std::prev(stack.end(), 1);
         auto& op2 = *std::prev(stack.end(), 2);
         const IOperand* res;
-        if (op == '+') res = *op1 + *op2;
-        else if (op == '-') res = *op1 - *op2;
-        else if (op == '*') res = *op1 * *op2;
-        else if (op == '/') res = *op1 / *op2;
-        else if (op == '%') res = *op1 % *op2;
+        if (op == '+') res = *op2 + *op1;
+        else if (op == '-') res = *op2 - *op1;
+        else if (op == '*') res = *op2 * *op1;
+        else if (op == '/') res = *op2 / *op1;
+        else if (op == '%') res = *op2 % *op1;
         stack.pop_back();
         stack.pop_back();
         stack.push_back(res);
-    } else {
-        // ERROR
-    }
+    } else throw ParserException("Not enough values in stack");
 }
 
 void AbstractVM::avm_print() {
     // assert value is Int8, then interprets it as ASCII value
     // displays character on standardoutput
+    auto& op1 = *std::prev(stack.end(), 1);
 }
 
 void AbstractVM::avm_exit() {

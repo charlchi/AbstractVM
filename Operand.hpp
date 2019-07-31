@@ -9,6 +9,7 @@
 #include <ostream>
 #include <sstream>
 #include <iostream>
+#include <iomanip>
 #include <limits.h>
 #include <exception>
 #include <cfloat>
@@ -53,6 +54,8 @@ public:
 			long long lhs_long = std::stoll(strval);
 			long long rhs_long = std::stoll(rhs.toString());
 			long long res;
+			if ((op == "/" || op == "%") && rhs_long == 0)
+				throw AVMException("Invalid division by zero");
 			if      (op == "+") res = (lhs_long + rhs_long);
 			else if (op == "-") res = (lhs_long - rhs_long);
 			else if (op == "*") res = (lhs_long * rhs_long);
@@ -71,6 +74,8 @@ public:
 			long double lhs_double = std::stold(strval);
 			long double rhs_double = std::stold(rhs.toString());
 			long double res;
+			if ((op == "/" || op == "%") && rhs_double == 0)
+				throw AVMException("Invalid division by zero");
 			if      (op == "+") res = (lhs_double + rhs_double);
 			else if (op == "-") res = (lhs_double - rhs_double);
 			else if (op == "*") res = (lhs_double * rhs_double);
@@ -81,8 +86,7 @@ public:
 				throw AVMException("Float Overflow");
 			else if ((tt == Double) && (res > DBL_MAX || res < -DBL_MAX))
 				throw AVMException("Double Overflow");
-			ss << res;
-
+			ss << std::setprecision(14) << res;
 		}
 		// error test for division zero
 		return (factory->createOperand(tt, ss.str()));
@@ -96,12 +100,12 @@ public:
 
 	std::string const & toString( void ) const { return strval; }
 
-	Operand(T pvalue,  std::string const * pstrval, const OperandFactory* of, eOperandType tt) {
+	Operand(T pvalue, const OperandFactory* of, eOperandType tt) {
 		type = tt;
 		value = pvalue;
 		factory = of;
 		std::stringstream ss(std::stringstream::out);
-		ss << +pvalue;
+		ss << std::setprecision(14) << +pvalue;
 		strval = ss.str();
 	}
 
