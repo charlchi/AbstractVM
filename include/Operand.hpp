@@ -54,8 +54,10 @@ public:
 			long long lhs_long = std::stoll(strval);
 			long long rhs_long = std::stoll(rhs.toString());
 			long long res;
-			if ((op == "/" || op == "%") && rhs_long == 0)
+			if ((op == "/") && rhs_long == 0)
 				throw AVMException("Invalid division by zero");
+			if ((op == "%") && rhs_long == 0)
+				throw AVMException("Invalid mod by zero");
 			if      (op == "+") res = (lhs_long + rhs_long);
 			else if (op == "-") res = (lhs_long - rhs_long);
 			else if (op == "*") res = (lhs_long * rhs_long);
@@ -74,8 +76,10 @@ public:
 			long double lhs_double = std::stold(strval);
 			long double rhs_double = std::stold(rhs.toString());
 			long double res;
-			if ((op == "/" || op == "%") && rhs_double == 0)
+			if ((op == "/") && rhs_double == 0)
 				throw AVMException("Invalid division by zero");
+			if ((op == "%") && rhs_double == 0)
+				throw AVMException("Invalid mod by zero");
 			if      (op == "+") res = (lhs_double + rhs_double);
 			else if (op == "-") res = (lhs_double - rhs_double);
 			else if (op == "*") res = (lhs_double * rhs_double);
