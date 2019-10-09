@@ -1,4 +1,4 @@
-for file in `ls misc/files/*.avm | sort -V`
+for file in `ls tests/*.avm | sort -V`
 do
 	echo $file
 	./avm "$file"
