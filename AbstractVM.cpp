@@ -3,6 +3,8 @@
 #include <sstream>
 #include <fstream>
 #include <list>
+#include <limits.h>
+#include <cfloat>
 #include <regex>
 #include "IOperand.hpp"
 #include "OperandFactory.hpp"
@@ -28,6 +30,7 @@ AbstractVM::~AbstractVM() {
 
 void AbstractVM::parse(std::istream& input) {
     for (std::string line; getline(input, line);) {
+        //std::cerr << line << "\n";
         if (!isFile && line.find(";;") != std::string::npos)
             return;
 
@@ -82,15 +85,29 @@ eOperandType AbstractVM::avm_get_value(std::string& tok, std::string& ret) {
     }
     throw ParserException("Invalid VALUE");
 }
-// Int8\(-?[0-9]\d*\)$
-// Int8\(-?[0-9]\d*(\.\d+)\)$
 
 void AbstractVM::avm_push(std::stringstream& ss) {
     std::string tok;
     if (std::getline(ss, tok, ' ')) {
         std::string ret;
-        eOperandType type = avm_get_value(tok, ret);    
-        const IOperand* test = factory.createOperand(type, ret);
+        eOperandType tt = avm_get_value(tok, ret);
+        if (tt < Float) {
+            long long test = std::stoll(ret.c_str());
+            if ((tt == Int8) && (test > SCHAR_MAX || test < SCHAR_MIN))
+                throw ParserException("Int8 Overflow");
+            else if ((tt == Int16) && (test > SHRT_MAX || test < SHRT_MIN))
+                throw ParserException("Int16 Overflow");
+            else if ((tt == Int32) && (test > INT_MAX || test < INT_MIN))
+                throw ParserException("Int32 Overflow");
+        } else {
+            long double test = std::stold(ret.c_str());
+            if ((tt == Float) && (test > FLT_MAX || test < -FLT_MAX))
+                throw ParserException("Float Overflow");
+            else if ((tt == Double) && (test > DBL_MAX || test < -DBL_MAX))
+                throw ParserException("Double Overflow");
+
+        }
+        const IOperand* test = factory.createOperand(tt, ret);
         stack.push_back(test);
     } else throw ParserException("No VALUE after push");
 }
@@ -116,7 +133,7 @@ void AbstractVM::avm_assert(std::stringstream& ss) {
     std::string tok;
     if (std::getline(ss, tok, ' ')) {
         std::string ret;
-        eOperandType type = avm_get_value(tok, ret);    
+        eOperandType type = avm_get_value(tok, ret);
         const IOperand* test = factory.createOperand(type, ret);
         auto& op1 = *std::prev(stack.end(), 1);
         if (test->toString() != op1->toString())
@@ -147,6 +164,10 @@ void AbstractVM::avm_print() {
     // assert value is Int8, then interprets it as ASCII value
     // displays character on standardoutput
     auto& op1 = *std::prev(stack.end(), 1);
+    if (op1->getType() == Int8)
+    {
+        std::cout << static_cast<char>(std::stoll(op1->toString()));
+    } else throw ParserException("\"print\" instruction can only handle int8");
 }
 
 void AbstractVM::avm_exit() {

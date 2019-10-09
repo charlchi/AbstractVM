@@ -14,7 +14,7 @@ int main(int argc, char const* argv[])
         AbstractVM env = AbstractVM(argc, argv);
     }
     catch(const std::exception& e) {
-        std::cerr << "\033[1;31mError:\033[0m " << e.what() << '\n';
+        std::cout << "\033[1;31mError:\033[0m " << e.what() << '\n';
     }
     return 0;
 }
